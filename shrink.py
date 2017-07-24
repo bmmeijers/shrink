@@ -105,7 +105,7 @@ def shrink_balls(ring, balls, inner = True):
     radius = bigradius
     for p, n in zip(points, normals):
         # use previous close candidate to reduce number of steps 
-        # for convergence, see sec. 3.2 of Ma, 2012
+        # for convergence, see sec. 3.2 of (Ma, 2012)
         if radius != bigradius and p != q_prev:
             try:
                 radius = compute_radius(p, n, q_prev)
@@ -116,7 +116,7 @@ def shrink_balls(ring, balls, inner = True):
 
         # in case we have a previous second point (q_prev)
         # and compute_radius gets a negative radius
-        # then we start the algorithm with the big
+        # then we start the algorithm with the big radius
         if radius <= 0:
             radius = bigradius
 

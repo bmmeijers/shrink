@@ -1,0 +1,7 @@
+Changelog for shrink
+===========================
+
+0.0 (unreleased)
+----------------
+
+- Initial version. API may still undergo major changes.

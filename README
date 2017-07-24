@@ -1,0 +1,49 @@
+README
+======
+
+Shrink - Approximating the 2D medial axis
+
+Approximate the 2D medial axis given a set of points sampled from a
+shape and the normal vectors to the shape at those points
+
+The original 3D algorithm is described in:
+
+3D medial axis point approximation using nearest neighbors and the normal field
+Ma, J., Bae, S.W. & Choi, S.
+Vis Comput (2012) 28: 7.
+https://doi.org/10.1007/s00371-011-0594-7
+
+
+Installation
+------------
+
+- Download the source
+- Run `python shrink.py`
+
+
+Changelog
+---------
+See `CHANGES.txt`.
+
+
+Bug reports
+-----------
+If you discover any bugs, feel free to create an issue on Bitbucket.
+
+Please add as much information as possible to help us fixing the possible bug.
+We also encourage you to help even more by forking and sending us a pull
+request.
+
+The issue tracker lives `here <https://bitbucket.org/bmmeijers/shrink/issues>`_.
+
+
+Maintainers
+-----------
+
+- `Martijn Meijers <https://bitbucket.org/bmmeijers>`_
+
+
+License
+-------
+
+`MIT License <https://www.tldrlegal.com/l/mit>`_
