@@ -1,7 +1,8 @@
 import operator
 import logging
-from util import distance2, compute_envelope, format_line
 import unittest
+import math
+from util import distance2, compute_envelope, format_line
 
 class KdNode(object):
     """
@@ -217,7 +218,7 @@ class KdTree(object):
         result = []
         visit_ct = k_nearest(self.root, pt, k, result)
         logging.debug('Visited {0} leaf nodes'.format(visit_ct))
-        return result  # [item for (d, item) in result]
+        return [(math.sqrt(d), item) for (d, item) in result]
 
 
 def visit_k_nearest(node, pt, k, result):

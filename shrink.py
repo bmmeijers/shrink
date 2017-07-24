@@ -46,6 +46,8 @@ def compute_radius(p, n, q):
         raise ValueError("For equal points we can *not* compute a radius")
     d = norm(sub(p, q))
     cos_theta = dot(n, sub(p, q)) / d
+    if cos_theta == 0:
+        raise ValueError('Vector (n) and (p-q) are perpendicular')
     radius = d / (2.0 * cos_theta)
     return radius
 
@@ -85,7 +87,7 @@ def shrink_balls(ring, balls, inner = True):
     points, normals = compute_normals(ring)
 
     # -- VISUAL DEBUG with QGIS, see qgiswatch.py
-    debug = False
+    debug = True
     if debug:
         with open("/tmp/normals.wkt", 'w') as fh:
             fh.write("wkt\n")
@@ -103,14 +105,16 @@ def shrink_balls(ring, balls, inner = True):
 
     stop_eps = 1.0
     radius = bigradius
+    radius_prev = None
+    q_prev = None
     for p, n in zip(points, normals):
         # use previous close candidate to reduce number of steps 
         # for convergence, see sec. 3.2 of (Ma, 2012)
         if radius != bigradius and p != q_prev:
             try:
                 radius = compute_radius(p, n, q_prev)
-            except ZeroDivisionError:
-                break
+            except ValueError:
+                radius = bigradius
         else:
             radius = bigradius
 
@@ -119,6 +123,8 @@ def shrink_balls(ring, balls, inner = True):
         # then we start the algorithm with the big radius
         if radius <= 0:
             radius = bigradius
+
+        radius = bigradius
 
         # find inner balls or outer balls?
         if not inner:
@@ -140,13 +146,20 @@ def shrink_balls(ring, balls, inner = True):
             # find 2 closest points to the center
             candidates = tree.k_nearest(center, k=2)
             q = candidates[0][1]
-            # if we found the point p as closest point, we take the other point
             if q == p:
+                # if we found the p as closest point we take the other point
                 q = candidates[1][1]
+                # but we make sure that this point still lies at correct side
+                # of halfplane through p
+                # otherwise radius would grow
+                if (candidates[1][0] - radius) > 1e-5:
+                    b = Ball(center, radius, p, q_prev, _)
+                    balls.append(b)
+                    break
             q_prev = q
 
             # -- VISUAL DEBUG with QGIS
-            if debug:
+            if False:
                 one = add(p, mul(n, -3 * bigradius))
                 other = add(p, mul(n, 3 * bigradius))
                 with open("/tmp/line.wkt", 'w') as fh:
@@ -180,18 +193,10 @@ def shrink_balls(ring, balls, inner = True):
 
             # store old radius and compute new radius
             radius_prev = radius
-            try:
-                radius = compute_radius(p, n, q)
-            except ValueError:
-                break
-            except ZeroDivisionError:
-                break
-
+            radius = compute_radius(p, n, q)
             # terminate when radius of new ball is not significantly different
-            # from previous iteration
             if abs(radius - radius_prev) < stop_eps:
-                if debug:
-                    print >> sys.stderr, "Found ball with", _, "step(s)"
+                # print >> sys.stderr, "Found ball with", _, "step(s)"
                 b = Ball(center, radius, p, q, _)
                 balls.append(b)
                 break
@@ -199,22 +204,27 @@ def shrink_balls(ring, balls, inner = True):
 
 def _test():
     from data import poly as ring
-    balls = []
-    shrink_balls(ring, balls, True)
-    shrink_balls(ring, balls, False)
+    inner = []
+    shrink_balls(ring, inner, True)
+    outer = []
+    shrink_balls(ring, outer, False)
 
-    if False:
+    if True:
         # FIXME: split in inner and outer set of balls
         with open("/tmp/balls.wkt", 'w') as fh:
             #
-            fh.write("wkt;iters\n")
-            lines = "\n".join(format_circle(circle(b.center, b.radius)) + ";" + str(b.iterations) for b in balls)
+            fh.write("wkt;iters;inner\n")
+            lines = "\n".join(format_circle(circle(b.center, b.radius)) + ";" + str(b.iterations) + ";True" for b in inner)
+            lines += "\n"
+            lines += "\n".join(format_circle(circle(b.center, b.radius)) + ";" + str(b.iterations) + ";False" for b in outer)
             fh.write(lines)
 
         with open("/tmp/centers.wkt", 'w') as fh:
             #
-            fh.write("wkt;iters\n")
-            lines = "\n".join(format_point(b.center) + ";" + str(b.iterations) for b in balls)
+            fh.write("wkt;iters;inner\n")
+            lines = "\n".join(format_point(b.center) + ";" + str(b.iterations)+ ";True" for b in inner)
+            lines += "\n"
+            lines += "\n".join(format_point(b.center) + ";" + str(b.iterations)+ ";False" for b in outer)
             fh.write(lines)
 
 if __name__ == "__main__":
