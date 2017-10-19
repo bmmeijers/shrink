@@ -4,7 +4,11 @@ README
 Shrink - Approximating the 2D medial axis
 
 Approximate the 2D medial axis given a set of points sampled from a
-shape and the normal vectors to the shape at those points
+shape and the normal vectors to the shape at those points.
+
+This code can be used to obtain points inside a polygonal shape that are far
+from the boundary of the shape. Thus, a good use case is providing a point for
+placing a text label inside a 2D polygon.
 
 The original 3D algorithm is described in:
 
@@ -12,6 +16,17 @@ The original 3D algorithm is described in:
 Ma, J., Bae, S.W. & Choi, S.
 Vis Comput (2012) 28: 7.
 https://doi.org/10.1007/s00371-011-0594-7
+
+
+Acknowledgement
+---------------
+Thanks to Ravi Peters for explaining me the algorithm in detail.
+
+In case you are looking for a 3D version of the implementation of the algorithm
+you can use his, available here:
+
+- https://github.com/tudelft3d/masbpy (Python)
+- https://github.com/tudelft3d/masbcpp (C++)
 
 
 Installation

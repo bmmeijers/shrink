@@ -87,7 +87,7 @@ def shrink_balls(ring, balls, inner = True):
     points, normals = compute_normals(ring)
 
     # -- VISUAL DEBUG with QGIS, see qgiswatch.py
-    debug = True
+    debug = False
     if debug:
         with open("/tmp/normals.wkt", 'w') as fh:
             fh.write("wkt\n")
@@ -124,8 +124,6 @@ def shrink_balls(ring, balls, inner = True):
         if radius <= 0:
             radius = bigradius
 
-        radius = bigradius
-
         # find inner balls or outer balls?
         if not inner:
             n = mul(n, -1.0) # swap normal direction 
@@ -157,9 +155,12 @@ def shrink_balls(ring, balls, inner = True):
                     balls.append(b)
                     break
             q_prev = q
+            # store old radius and compute new radius
+            radius_prev = radius
+            radius = compute_radius(p, n, q)
 
             # -- VISUAL DEBUG with QGIS
-            if False:
+            if debug:
                 one = add(p, mul(n, -3 * bigradius))
                 other = add(p, mul(n, 3 * bigradius))
                 with open("/tmp/line.wkt", 'w') as fh:
@@ -191,26 +192,27 @@ def shrink_balls(ring, balls, inner = True):
                 del fh
             # -- END VISUAL DEBUG
 
-            # store old radius and compute new radius
-            radius_prev = radius
-            radius = compute_radius(p, n, q)
             # terminate when radius of new ball is not significantly different
             if abs(radius - radius_prev) < stop_eps:
-                # print >> sys.stderr, "Found ball with", _, "step(s)"
+                print >> sys.stderr, "Found ball with", _, "step(s)"
                 b = Ball(center, radius, p, q, _)
                 balls.append(b)
                 break
     return balls
 
+
 def _test():
     from data import poly as ring
+
+    # inner
     inner = []
     shrink_balls(ring, inner, True)
+
+    # outer
     outer = []
     shrink_balls(ring, outer, False)
 
     if True:
-        # FIXME: split in inner and outer set of balls
         with open("/tmp/balls.wkt", 'w') as fh:
             #
             fh.write("wkt;iters;inner\n")
